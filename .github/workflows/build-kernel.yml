@@ -86,7 +86,7 @@ jobs:
 
       - name: Copy defconfig
         run: |
-          cp $GITHUB_WORKSPACE/Patches/Patches/ares_user_defconfig $GITHUB_WORKSPACE/kernel/arch/arm64/configs
+          cp $GITHUB_WORKSPACE/Patches/ares_user_defconfig $GITHUB_WORKSPACE/kernel/arch/arm64/configs
       
       - name: Build Kernel for K40GE
         working-directory: kernel
