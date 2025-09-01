@@ -42,8 +42,8 @@ jobs:
       - name: Get Kernel Source Code
         uses: actions/checkout@v5
         with:
-          repository: LineageOS/android_kernel_sony_sdm845
-          ref: lineage-20
+          repository: Tkpointz/android_kernel_aresin
+          ref: T
           path: kernel
       
       - name: Setup Cross-compile toolchain
