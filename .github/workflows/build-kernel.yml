@@ -100,12 +100,7 @@ jobs:
           export PATH=/usr/lib/ccache:$GITHUB_WORKSPACE/toolchain/bin:$PATH
           make -j$(nproc --all) ${args} ares_user_defconfig all
       
-      - name: Make AnyKernel3
-        run: |
-          ls $GITHUB_WORKSPACE/kernel/out/arch/arm64/boot/
-          cp $GITHUB_WORKSPACE/kernel/out/arch/arm64/boot/Image.gz-dtb $GITHUB_WORKSPACE/AnyKernel3
-      
-      - name: Pack Kernel
+      - name: Pack Kernel using Magiskboot
         working-directory: Magiskboot
         run: |
             tar -xvf boot.tar.gz
@@ -114,7 +109,7 @@ jobs:
             cp $GITHUB_WORKSPACE/kernel/out/arch/arm64/boot/Image ./kernel
             ./magiskboot repack boot.img boot_SukiSU_${{ env.KSUVER }}.img
 
-      - name: Pack kernel image with AnyKernel3
+      - name: Upload repacked boot image
         uses: actions/upload-artifact@v4
         with:
           name: K40GE_SukiSU_${{ env.KSUVER }}
