@@ -2,6 +2,12 @@ name: Build Kernel
 
 on:
   workflow_dispatch:
+    inputs:
+      enable_feature_kpm:
+        description: "是否启用kpm"
+        required: false
+        default: false
+        type: boolean
 
 jobs:
   build:
@@ -87,6 +93,9 @@ jobs:
 
       - name: Copy defconfig
         run: |
+          if [ "${{ inputs.enable_feature_kpm }}" = "true" ]; then
+            echo "CONFIG_KPM_y" >> $GITHUB_WORKSPACE/Patches/ares_user_defconfig
+          fi
           cp $GITHUB_WORKSPACE/Patches/ares_user_defconfig $GITHUB_WORKSPACE/kernel/arch/arm64/configs
       
       - name: Build Kernel for K40GE
@@ -101,6 +110,15 @@ jobs:
           export PATH=/usr/lib/ccache:$GITHUB_WORKSPACE/toolchain/bin:$PATH
           make -j$(nproc --all) ${args} ares_user_defconfig all
       
+      - name: Apply KernelPatch for KPM
+        if: ${{ inputs.enable_feature_kpm }}
+        working-directory: kernel/out/arch/arm64/boot
+        run: |
+          cp $GITHUB_WORKSPACE/sukisu_patch/kpm/patch_linux .
+          chmod +x patch_linux
+          ./patch_linux
+          mv oImage Image
+          
       - name: Pack Kernel using Magiskboot
         working-directory: Magiskboot
         run: |
