@@ -43,7 +43,7 @@ jobs:
         uses: actions/checkout@v5
         with:
           repository: Tkpointz/android_kernel_aresin
-          ref: T
+          ref: U
           path: kernel
       
       - name: Setup Cross-compile toolchain
@@ -79,6 +79,7 @@ jobs:
       - name: Patch Kernel
         working-directory: kernel
         run: |
+          patch -p1 -R < $GITHUB_WORKSPACE/Patches/original-ksu.patch
           patch -p1 < $GITHUB_WORKSPACE/Patches/fix-build-error.patch
           patch -p1 < $GITHUB_WORKSPACE/Patches/ksu-syscall-hooks.patch
           patch -p1 -F 3 < $GITHUB_WORKSPACE/susfs4ksu/kernel_patches/50_add_susfs_in_kernel-4.14.patch

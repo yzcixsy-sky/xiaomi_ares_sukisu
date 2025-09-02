@@ -1,6 +1,6 @@
-From 0294f8746b14398e55e31a8cdb694cef5caaa46a Mon Sep 17 00:00:00 2001
+From 908c793e2a3c1639e4e22e8cb35fa6110210a745 Mon Sep 17 00:00:00 2001
 From: MerCuJerry <mercujerry@gmail.com>
-Date: Mon, 1 Sep 2025 22:10:59 +0800
+Date: Tue, 2 Sep 2025 19:22:48 +0800
 Subject: [PATCH] patch: ksu: manual patching kernel for ksu
 
 ---
@@ -14,10 +14,10 @@ Subject: [PATCH] patch: ksu: manual patching kernel for ksu
  7 files changed, 86 insertions(+)
 
 diff --git a/drivers/input/input.c b/drivers/input/input.c
-index cadb368be..03444d9fd 100644
+index f9f3d6261..de628e110 100644
 --- a/drivers/input/input.c
 +++ b/drivers/input/input.c
-@@ -366,10 +366,19 @@ static int input_get_disposition(struct input_dev *dev,
+@@ -377,10 +377,19 @@ static int input_get_disposition(struct input_dev *dev,
  	return disposition;
  }
  
@@ -63,10 +63,10 @@ index 32f6f1c68..56cb66fb9 100644
  		return NULL;
  	return dentry->d_fsdata;
 diff --git a/fs/exec.c b/fs/exec.c
-index 836ee524a..d04088c9a 100644
+index ae0a49517..a0799f114 100644
 --- a/fs/exec.c
 +++ b/fs/exec.c
-@@ -1696,11 +1696,24 @@ static int exec_binprm(struct linux_binprm *bprm)
+@@ -1709,11 +1709,24 @@ static int exec_binprm(struct linux_binprm *bprm)
  /*
   * sys_execve() executes a new program.
   */
@@ -92,12 +92,12 @@ index 836ee524a..d04088c9a 100644
  	struct linux_binprm *bprm;
  	struct file *file;
 diff --git a/fs/namespace.c b/fs/namespace.c
-index 8e852fed0..daa006c70 100644
+index 30772b12a..b59e1054e 100644
 --- a/fs/namespace.c
 +++ b/fs/namespace.c
-@@ -1721,6 +1721,39 @@ static inline bool may_mandlock(void)
- 	return capable(CAP_SYS_ADMIN);
+@@ -1730,6 +1730,39 @@ static inline bool may_mandlock(void)
  }
+ #endif
  
 +static int can_umount(const struct path *path, int flags)
 +{
@@ -184,7 +184,7 @@ index 0da6e4f19..815f2b040 100644
  	if (!(file->f_mode & FMODE_READ))
  		return -EBADF;
 diff --git a/fs/stat.c b/fs/stat.c
-index 873785dae..e2421f672 100644
+index 0fda4b6b8..e9f8ec453 100644
 --- a/fs/stat.c
 +++ b/fs/stat.c
 @@ -148,6 +148,10 @@ int vfs_statx_fd(unsigned int fd, struct kstat *stat,

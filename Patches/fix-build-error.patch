@@ -1,11 +1,12 @@
-From c2aa47ed2a40ec4b3e8be58705e42b07fae64063 Mon Sep 17 00:00:00 2001
+From 8870f112b2e69ab041125eff3114a2a86c1e9921 Mon Sep 17 00:00:00 2001
 From: MerCuJerry <mercujerry@gmail.com>
-Date: Mon, 1 Sep 2025 21:22:25 +0800
-Subject: [PATCH] patch: fix: fix build error while using clang
+Date: Tue, 2 Sep 2025 19:11:36 +0800
+Subject: [PATCH] fix: fix build error while using clang
 
 ---
  Makefile                                      |  22 +++-
  arch/arm64/kernel/hwconf_manager.c            |   2 +-
+ drivers/block/zram/zram_drv.c                 |   2 +-
  .../focaltech_spi/focaltech_core.c            |   2 +-
  .../input/touchscreen/xiaomi/xiaomi_touch.c   |   6 +-
  .../base/power/eem_v2/mt6893/mtk_eem.c        |   4 +-
@@ -20,14 +21,14 @@ Subject: [PATCH] patch: fix: fix build error while using clang
  .../ov64b40sunnymipiraw_Sensor.c              |   2 +-
  drivers/misc/mediatek/perf/perf_tracker.c     |   4 +-
  .../thermal/common/coolers/mtk_cooler_atm.c   |   2 +-
- drivers/usb/gadget/function/f_accessory.c     |   4 +-
- 17 files changed, 94 insertions(+), 76 deletions(-)
+ .../typec/tcpc_ares/pd_dpm_alt_mode_dp.c      |   3 +-
+ 18 files changed, 95 insertions(+), 76 deletions(-)
 
 diff --git a/Makefile b/Makefile
-index 10d7af256..67f9d4646 100644
+index 861a02721..11d48f875 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -361,8 +361,13 @@ HOST_LFS_CFLAGS := $(shell getconf LFS_CFLAGS 2>/dev/null)
+@@ -368,8 +368,13 @@ HOST_LFS_CFLAGS := $(shell getconf LFS_CFLAGS 2>/dev/null)
  HOST_LFS_LDFLAGS := $(shell getconf LFS_LDFLAGS 2>/dev/null)
  HOST_LFS_LIBS := $(shell getconf LFS_LIBS 2>/dev/null)
  
@@ -41,7 +42,7 @@ index 10d7af256..67f9d4646 100644
  HOSTCFLAGS   := -Wall -Wmissing-prototypes -Wstrict-prototypes -O2 \
  		-fomit-frame-pointer -std=gnu89 $(HOST_LFS_CFLAGS)
  HOSTCXXFLAGS := -O2 $(HOST_LFS_CFLAGS)
-@@ -370,16 +375,28 @@ HOSTLDFLAGS  := $(HOST_LFS_LDFLAGS)
+@@ -377,16 +382,28 @@ HOSTLDFLAGS  := $(HOST_LFS_LDFLAGS)
  HOST_LOADLIBES := $(HOST_LFS_LIBS)
  
  # Make variables (CC, etc...)
@@ -72,7 +73,7 @@ index 10d7af256..67f9d4646 100644
  AWK		= awk
  GENKSYMS	= scripts/genksyms/genksyms
  INSTALLKERNEL  := installkernel
-@@ -421,6 +438,7 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
+@@ -428,6 +445,7 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
  		   -fno-strict-aliasing -fno-common -fshort-wchar \
  		   -Werror-implicit-function-declaration \
  		   -Wno-format-security \
@@ -93,8 +94,21 @@ index 31abdad23..6c27fc934 100755
  {
  	int offset = 0;
  	memset(print_buf, 0, PAGE_SIZE);
+diff --git a/drivers/block/zram/zram_drv.c b/drivers/block/zram/zram_drv.c
+index 938817b96..d9c472d6a 100644
+--- a/drivers/block/zram/zram_drv.c
++++ b/drivers/block/zram/zram_drv.c
+@@ -1044,7 +1044,7 @@ static void free_pages_life(struct zram_pages_life *pl)
+ 	}
+ }
+ 
+-static struct zram_pages_life *init_pages_life()
++static struct zram_pages_life *init_pages_life(void)
+ {
+ 	size_t i = 0;
+ 	struct zram_pages_life *pl = NULL;
 diff --git a/drivers/input/touchscreen/focaltech_spi/focaltech_core.c b/drivers/input/touchscreen/focaltech_spi/focaltech_core.c
-index a55adb427..d568805a5 100644
+index 8d7c3d801..c7ced057e 100644
 --- a/drivers/input/touchscreen/focaltech_spi/focaltech_core.c
 +++ b/drivers/input/touchscreen/focaltech_spi/focaltech_core.c
 @@ -2112,7 +2112,7 @@ static void fts_restore_mode_value(int mode, int value_type)
@@ -462,26 +476,20 @@ index 4ba45c703..9b5c57540 100644
  {
  	int t_K_SUM_TT_HIGH = CLCTM_TT_HIGH;
  	int t_K_SUM_TT_LOW = CLCTM_TT_LOW;
-diff --git a/drivers/usb/gadget/function/f_accessory.c b/drivers/usb/gadget/function/f_accessory.c
-index 7f8846fcd..49b2914f5 100644
---- a/drivers/usb/gadget/function/f_accessory.c
-+++ b/drivers/usb/gadget/function/f_accessory.c
-@@ -80,13 +80,13 @@ struct acc_dev {
- 	/* online indicates state of function_set_alt & function_unbind
- 	 * set to 1 when we connect
- 	 */
--	int online:1;
-+	unsigned int online:1;
+diff --git a/drivers/misc/mediatek/typec/tcpc_ares/pd_dpm_alt_mode_dp.c b/drivers/misc/mediatek/typec/tcpc_ares/pd_dpm_alt_mode_dp.c
+index 84733d809..760a14494 100644
+--- a/drivers/misc/mediatek/typec/tcpc_ares/pd_dpm_alt_mode_dp.c
++++ b/drivers/misc/mediatek/typec/tcpc_ares/pd_dpm_alt_mode_dp.c
+@@ -349,7 +349,8 @@ static inline uint8_t dp_dfp_u_select_mode(struct pd_port *pd_port,
+ 	struct svdm_mode *remote, *local;
+ 	int i, j;
+ 	int match_score, best_match_score = 0;
+-	int local_index = -1, remote_index = -1;
++	int __maybe_unused local_index = -1;
++	int remote_index = -1;
+ 	struct tcpc_device __maybe_unused *tcpc = pd_port->tcpc;
  
- 	/* disconnected indicates state of open & release
- 	 * Set to 1 when we disconnect.
- 	 * Not cleared until our file is closed.
- 	 */
--	int disconnected:1;
-+	unsigned int disconnected:1;
- 
- 	/* strings sent by the host */
- 	char manufacturer[ACC_STRING_SIZE];
+ 	local = &svid_data->local_mode;
 -- 
 2.51.0
 
