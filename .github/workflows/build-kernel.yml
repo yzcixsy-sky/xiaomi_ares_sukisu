@@ -94,7 +94,7 @@ jobs:
       - name: Copy defconfig
         run: |
           if [ "${{ inputs.enable_feature_kpm }}" = "true" ]; then
-            echo "CONFIG_KPM_y" >> $GITHUB_WORKSPACE/Patches/ares_user_defconfig
+            echo "CONFIG_KPM=y" >> $GITHUB_WORKSPACE/Patches/ares_user_defconfig
           fi
           cp $GITHUB_WORKSPACE/Patches/ares_user_defconfig $GITHUB_WORKSPACE/kernel/arch/arm64/configs
       
@@ -118,7 +118,7 @@ jobs:
           chmod +x patch_linux
           ./patch_linux
           mv oImage Image
-          
+
       - name: Pack Kernel using Magiskboot
         working-directory: Magiskboot
         run: |
