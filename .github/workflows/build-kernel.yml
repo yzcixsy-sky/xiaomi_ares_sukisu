@@ -3,6 +3,11 @@ name: Build Kernel
 on:
   workflow_dispatch:
     inputs:
+      enable_susfs:
+        description: "是否启用susfs支持"
+        required: false
+        default: false
+        type: boolean
       enable_feature_kpm:
         description: "是否启用kpm"
         required: false
@@ -64,7 +69,11 @@ jobs:
         working-directory: kernel
         run: |
           echo DATE=$(date +%F) >> $GITHUB_ENV
-          curl -LSs "https://raw.githubusercontent.com/SukiSU-Ultra/SukiSU-Ultra/main/kernel/setup.sh" | bash -s main
+          if [ "${{ inputs.enable_susfs }}" = "true" ]; then
+            curl -LSs "https://raw.githubusercontent.com/SukiSU-Ultra/SukiSU-Ultra/main/kernel/setup.sh" | bash -s susfs-main
+          else
+            curl -LSs "https://raw.githubusercontent.com/SukiSU-Ultra/SukiSU-Ultra/main/kernel/setup.sh" | bash -s main
+          fi
           cd ./KernelSU
           export KSU_VERSION=$(expr $(/usr/bin/git rev-list --count main) "+" 10700)
           echo "KSUVER=$KSU_VERSION" >> $GITHUB_ENV
@@ -76,13 +85,23 @@ jobs:
           repository: SukiSU-Ultra/SukiSU_patch
           path: sukisu_patch
 
+      - name: Get susfs4ksu (条件性)
+        if: ${{ inputs.enable_susfs }}
+        run: |
+          git clone -b kernel-4.14 --depth=1 https://gitlab.com/simonpunk/susfs4ksu.git
+          cp $GITHUB_WORKSPACE/susfs4ksu/kernel_patches/fs/* $GITHUB_WORKSPACE/kernel/fs/
+          cp $GITHUB_WORKSPACE/susfs4ksu/kernel_patches/include/linux/* $GITHUB_WORKSPACE/kernel/include/linux/
+
       - name: Patch Kernel
         working-directory: kernel
         run: |
           patch -p1 -R < $GITHUB_WORKSPACE/Patches/original-ksu.patch
           patch -p1 < $GITHUB_WORKSPACE/Patches/fix-build-error.patch
           patch -p1 < $GITHUB_WORKSPACE/Patches/ksu-syscall-hooks.patch
-          # 移除了所有与 susfs 相关的补丁
+          if [ "${{ inputs.enable_susfs }}" = "true" ]; then
+            patch -p1 -F 3 < $GITHUB_WORKSPACE/susfs4ksu/kernel_patches/50_add_susfs_in_kernel-4.14.patch
+            patch -p1 < $GITHUB_WORKSPACE/Patches/susfs_upgrade_patch.patch
+          fi
 
       - name: Copy defconfig
         run: |
